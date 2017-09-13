@@ -6,6 +6,8 @@ navbar:
   left:
   - text: Simulation Study
     href: articles/simu.html
+  - text: Case Study
+    href: articles/case_study.html
   - text: Reference
     href: reference/index.html
   right:
