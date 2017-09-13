@@ -1,0 +1,40 @@
+template:
+  params:
+    bootswatch: flatly
+
+navbar:
+  left:
+  - text: Simulation Study
+    href: articles/simu.html
+  - text: Reference
+    href: reference/index.html
+  right:
+  - icon: fa-github
+    href: https://github.com/SMAC-Group/pdc
+
+reference:
+  - title: PDC main functions
+    contents:
+    - order_variables
+    - pdc
+  - title: Simulation functions
+    contents:
+    - run_simulation
+    - simulate_data
+  - title: Helpers
+    contents:
+    - construct_cov_matrix
+    - find_select
+    - get_X
+    - ggplot_like_colors
+    - hit
+    - is_correct
+    - is_included
+    - L2.2
+    - median_multivariate_cov_bootstrap
+    - median_se_boostrap
+    - MSE
+    - nb_correct
+    - nb_false_pos
+    - nb_selected
+    - nb_signif
