@@ -1,3 +1,4 @@
+#' @export
 sure_screen = function(y, X, gamma = 0.8){
   n = nrow(X)
   p = ncol(X)
@@ -10,7 +11,7 @@ sure_screen = function(y, X, gamma = 0.8){
   ranking[1:k]
 }
 
-
+#' @export
 sure_screen_perturbed = function(y, X, B = 100, gamma = 0.8){
   n = nrow(X)
   p = ncol(X)
