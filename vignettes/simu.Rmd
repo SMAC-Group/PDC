@@ -6,7 +6,8 @@ output:
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
----
+--- 
+
 
 ```{r, echo=FALSE, message=FALSE}
 library(pdc)
@@ -46,6 +47,9 @@ names(X) = c("Meth.", "Med. PE", "SD Med. PE", "Med. MSE", "SD Med. MSE", "Corre
 kable(X, caption = '**Table 1:** Performance of model selection criteria for Simulation 1.', format = "markdown")
 ```
 
+```{r omethign, cache = TRUE}
+Sys.sleep(4)
+```
 
 ```{r, out.width = "625px", fig.cap="**Table 1**: Performance of model selection criteria for Simulation 1.", fig.align='center', echo=FALSE}
 knitr::include_graphics("/Users/stephaneguerrier/Documents/Software/pdc/man/Figures/simu1_tab.png")

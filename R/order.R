@@ -36,7 +36,7 @@
 #' Medina, M., Guerrier, S. & Victoria-Feser, M.-P. ArXiv link:
 #' \href{https://arxiv.org/abs/1511.04485}{https://arxiv.org/abs/1511.04485}
 #'
-order_variables <- function(y, X, intercept = FALSE){
+order_variables <- function(y, X, intercept = FALSE, adaptive = TRUE){
 
   # Compute sample size and number of varibales
   X <- as.matrix(X)
@@ -57,9 +57,13 @@ order_variables <- function(y, X, intercept = FALSE){
     a0 <- 0
   }
 
-  w <- as.vector(abs(solve(t(sX)%*%sX,t(sX)%*%y0)))
-  norm.col <- as.vector(sqrt(t(rep(1,n))%*%sX^2))
-  wX <- X%*%diag(w/norm.col)
+  if (adaptive == TRUE){
+    w <- as.vector(abs(solve(t(sX)%*%sX,t(sX)%*%y0)))
+    norm.col <- as.vector(sqrt(t(rep(1,n))%*%sX^2))
+    wX <- X%*%diag(w/norm.col)
+  }else{
+    wX <- X
+  }
 
   # Start Greedy search
   seq <- NULL
