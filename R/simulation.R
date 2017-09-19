@@ -259,12 +259,13 @@ run_simulation <- function(nb_simu, true_beta, n, n_star, sigma, cor_X,
                            xlim = NULL, ylim = NULL, xlab = NULL, ylab = NULL,
                            title = NULL, cex.lab = 1.25,
                            cex.main = 1.25,
-                           cex.axis = 1.25){
+                           cex.axis = 1.25,
+                           adaptive = TRUE){
 
   # True parameters
-  true_beta <<- true_beta
-  p = length(true_beta)
-  m = n + n_star
+  true_beta <- true_beta
+  p <- length(true_beta)
+  m <- n + n_star
 
   # Initialisation
   # Estimated beta
@@ -286,7 +287,7 @@ run_simulation <- function(nb_simu, true_beta, n, n_star, sigma, cor_X,
   for (i in 1:nb_simu){
 
     # Simulate data set
-    X <- get.X(cor.in = cor_X, n = m, seed = i, nb.reg = length(true_beta))
+    X <- get.X(cor.in = cor_X, n = m, seed = i, nb.reg = p)
     y <- X%*%true_beta+rnorm(m,sd=sigma)
 
     # Training and testing sets
@@ -295,11 +296,18 @@ run_simulation <- function(nb_simu, true_beta, n, n_star, sigma, cor_X,
     X_train <- X[1:n, ]
     X_test  <- X[(n + 1):m, ]
 
+    # Sure Screening if p > n
+    if (p > (n - 1)){
+      K <- sure_screen(y_train, X_train)
+    }else{
+      K <- 1:p
+    }
+
     # PDC
-    res.pdc       <- pdc(y_train, X_train, intercept = FALSE)
-    beta.pdc[i, ] <- res.pdc$beta.hat
-    PE.pdc[i]     <- (mean((X_test%*%beta.pdc[i, ] - y_test)^2))
-    MSE.pdc[i]    <- sqrt(sum((beta.pdc[i, ] - true_beta)^2))
+    res.pdc        <- pdc(y_train, X_train[, K], intercept = FALSE, adaptive = adaptive)
+    beta.pdc[i, K] <- res.pdc$beta.hat
+    PE.pdc[i]      <- (mean((X_test%*%beta.pdc[i, ] - y_test)^2))
+    MSE.pdc[i]     <- sqrt(sum((beta.pdc[i, ] - true_beta)^2))
 
     #res.apdc      <- adaptive.pdc(y_train, X_train)
     #beta.apdc[i, ] <- res.apdc$beta.hat
@@ -307,19 +315,22 @@ run_simulation <- function(nb_simu, true_beta, n, n_star, sigma, cor_X,
     #MSE.apdc[i]   <- sqrt(sum((beta.apdc[i, ]-true_beta)^2))
 
     # Step BIC
-    beta.step.BIC[i, ] <- STEP.AIC(y_train, X_train, method = "BIC")$beta.hat
-    PE.step.BIC[i]     <- (mean((X_test%*%beta.step.BIC[i, ] - y_test)^2))
-    MSE.step.BIC[i]    <- sqrt(sum((beta.step.BIC[i, ] - true_beta)^2))
+    beta.step.BIC[i, K] <- STEP.AIC(y_train, X_train[, K], method = "BIC",
+                                    adaptive = adaptive)$beta.hat
+    PE.step.BIC[i]      <- (mean((X_test%*%beta.step.BIC[i, ] - y_test)^2))
+    MSE.step.BIC[i]     <- sqrt(sum((beta.step.BIC[i, ] - true_beta)^2))
 
     # Step AIC
-    beta.step.AIC[i, ] <- STEP.AIC(y_train, X_train, method = "AIC")$beta.hat
-    PE.step.AIC[i]     <- (mean((X_test%*%beta.step.AIC[i, ] - y_test)^2))
-    MSE.step.AIC[i]    <- sqrt(sum((beta.step.AIC[i, ] - true_beta)^2))
+    beta.step.AIC[i, K] <- STEP.AIC(y_train, X_train[, K], method = "AIC",
+                                   adaptive = adaptive)$beta.hat
+    PE.step.AIC[i]      <- (mean((X_test%*%beta.step.AIC[i, ] - y_test)^2))
+    MSE.step.AIC[i]     <- sqrt(sum((beta.step.AIC[i, ] - true_beta)^2))
 
     # Step HQ
-    beta.step.HQ[i, ]  <- STEP.AIC(y_train, X_train, method = "HQ")$beta.hat
-    PE.step.HQ[i]      <- (mean((X_test%*%beta.step.HQ[i, ] - y_test)^2))
-    MSE.step.HQ[i]     <- sqrt(sum((beta.step.HQ[i, ] - true_beta)^2))
+    beta.step.HQ[i, K]  <- STEP.AIC(y_train, X_train[, K], method = "HQ",
+                                   adaptive = adaptive)$beta.hat
+    PE.step.HQ[i]       <- (mean((X_test%*%beta.step.HQ[i, ] - y_test)^2))
+    MSE.step.HQ[i]      <- sqrt(sum((beta.step.HQ[i, ] - true_beta)^2))
 
     # True (best model)
     PE.true[i]  <- (sum((X_test%*%true_beta-y_test)^2))
@@ -448,10 +459,12 @@ run_simulation <- function(nb_simu, true_beta, n, n_star, sigma, cor_X,
   if (is.null(title)){ title= "Simulation"}
 
   plot(NA, xlim = xlim, ylim = ylim,
-       xlab = xlab, ylab = ylab,
+       xlab = xlab, ylab = " ",
        main = title, cex.lab = cex.lab,
        cex.main = cex.main,
        cex.axis = cex.axis)
+
+  mtext(ylab, side = 2, line = 2.5, cex = cex.lab)
 
   grid()
 
@@ -467,10 +480,25 @@ run_simulation <- function(nb_simu, true_beta, n, n_star, sigma, cor_X,
   add_point(PE.step.HQ, MSE.step.HQ, coleur[9], coleurTrans[9], point.pch[9])
   add_point(PE.LS, MSE.LS, coleur[10], coleurTrans[10], point.pch[10])
 
-  legend("topleft", c("SCAD", "alasso", "lasso", "MCP", "PDC",
-                      "enet", "AIC", "BIC", "HQ", "LS"),
-         pch = point.pch, col = coleur,
-         pt.cex = c(1.5, 1.5, 1.4, 1.5, 1.8, rep(1.4, 5)),
+  # Check which lab to display in legend
+  leg_indic = rep(NA, 10)
+  leg_indic[1]  <- add_legend(median(PE.scad), median(MSE.scad^2), xlim, ylim)
+  leg_indic[2]  <- add_legend(median(PE.alasso), median(MSE.alasso^2), xlim, ylim)
+  leg_indic[3]  <- add_legend(median(PE.lasso), median(MSE.lasso^2), xlim, ylim)
+  leg_indic[4]  <- add_legend(median(PE.mcp), median(MSE.mcp^2), xlim, ylim)
+  leg_indic[5]  <- add_legend(median(PE.pdc), median(MSE.pdc^2), xlim, ylim)
+  leg_indic[6]  <- add_legend(median(PE.enet), median(MSE.enet^2), xlim, ylim)
+  leg_indic[7]  <- add_legend(median(PE.step.AIC), median(MSE.step.AIC^2), xlim, ylim)
+  leg_indic[8]  <- add_legend(median(PE.step.BIC), median(MSE.step.BIC^2), xlim, ylim)
+  leg_indic[9]  <- add_legend(median(PE.step.HQ), median(MSE.step.HQ^2), xlim, ylim)
+  leg_indic[10] <- add_legend(median(PE.LS), median(MSE.LS^2), xlim, ylim)
+
+  leg_lab = c("SCAD", "alasso", "lasso", "MCP", "PDC",
+              "enet", "AIC", "BIC", "HQ", "LS")
+  leg_pt = c(1.5, 1.5, 1.4, 1.5, 1.8, rep(1.4, 5))
+  legend("topleft", leg_lab[leg_indic],
+         pch = point.pch[leg_indic], col = coleur[leg_indic],
+         pt.cex = leg_pt[leg_indic],
          bty = "n", cex = 1.2)
 
   # Output
@@ -513,4 +541,9 @@ boot.conf.region = function(X, B = 500){
     res[i,] = apply(X.star,2,median)
   }
   cov(res)
+}
+
+#' @export
+add_legend = function(x, y, xlim, ylim){
+  (x > xlim[1] & x < xlim[2]) & (y > ylim[1] & y < ylim[2])
 }
