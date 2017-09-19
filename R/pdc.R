@@ -35,7 +35,7 @@
 #' M., Guerrier, S. & Victoria-Feser, M.-P. ArXiv link:
 #' \href{https://arxiv.org/abs/1511.04485}{https://arxiv.org/abs/1511.04485}
 
-pdc <- function(y, X, intercept = FALSE){
+pdc <- function(y, X, intercept = FALSE, adaptive = TRUE){
 
   # Intial checks
   n   <- length(y)
@@ -47,7 +47,7 @@ pdc <- function(y, X, intercept = FALSE){
   if (p >= n){ stop("p >= n") }
 
   # Compute sequence
-  seq.ord <- order_variables(y, X, intercept = intercept)
+  seq.ord <- order_variables(y, X, intercept = intercept, adaptive = adaptive)
   yhat <- seq.ord$yhat
 
   # Compute estimated residual variance
