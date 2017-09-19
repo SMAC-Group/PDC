@@ -24,6 +24,20 @@ dev.off()
 save.image("data/simu1_part1.RData")
 rm(list = ls())
 
+# Simulation 1 (non-adaptive):
+tikz('simulation_study/figs/simu1_part1.tex', width=6,height=5)
+simu1_part1 <- run_simulation(nb_simu = 500, true_beta = c(1, rep(0,58), 1),
+                              n = 80, n_star = 800, sigma = 1, cor_X = 0.5,
+                              xlim = c(1.035, 1.095), ylim = c(0.02, 0.1),
+                              xlab = "PE$_{y}$",
+                              ylab = "MSE$_{\\beta}$",
+                              title = "Simulation 1: $n < p$",
+                              adaptive = FALSE)
+
+dev.off()
+save.image("data/simu1_part1.RData")
+rm(list = ls())
+
 
 # Simulation 2:
 tikz('simulation_study/figs/simu2_part1.tex', width=6,height=5)
