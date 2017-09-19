@@ -128,7 +128,7 @@ boot.med <- function(x, B = 500){
 
 
 #' @export
-STEP.AIC = function(y, X, method = "AIC", intercept = FALSE){
+STEP.AIC = function(y, X, method = "AIC", intercept = FALSE, adaptive = TRUE){
   # y = response vector, dim = n x 1
   # X = design matrix, dim = n x p
 
@@ -141,7 +141,7 @@ STEP.AIC = function(y, X, method = "AIC", intercept = FALSE){
   if (sum(method == c("AIC","BIC","HQ")) == 0){ stop("Method not supported")}
 
   # Compute sequence
-  seq.ord = order_variables(y, X, intercept = intercept)
+  seq.ord = order_variables(y, X, intercept = intercept, adaptive = adaptive)
   yhat = seq.ord$yhat
 
   # Compute penality
