@@ -260,7 +260,8 @@ run_simulation <- function(nb_simu, true_beta, n, n_star, sigma, cor_X,
                            title = NULL, cex.lab = 1.25,
                            cex.main = 1.25,
                            cex.axis = 1.25,
-                           adaptive = TRUE){
+                           adaptive = TRUE,
+                           omitted_variables = NULL){
 
   # True parameters
   true_beta <- true_beta
@@ -271,7 +272,7 @@ run_simulation <- function(nb_simu, true_beta, n, n_star, sigma, cor_X,
   # Estimated beta
   beta.LS <- beta.lasso <- beta.lasso <- beta.enet <- beta.alasso <- beta.mcp <-
     beta.scad <- beta.pdc <- beta.apdc <- beta.step.AIC <- beta.step.BIC <-
-    beta.step.HQ <- matrix(NA, nb_simu, p)
+    beta.step.HQ <- matrix(0, nb_simu, p)
 
   # Prediciton error
   PE.pdc <- PE.apdc <- PE.lasso <- PE.enet <- PE.alasso <- PE.mcp <-
@@ -283,6 +284,17 @@ run_simulation <- function(nb_simu, true_beta, n, n_star, sigma, cor_X,
     MSE.mcp <- MSE.scad <- MSE.step.AIC <- MSE.step.BIC <-
     MSE.step.HQ <- MSE.true <- MSE.LS <- rep(NA,nb_simu)
 
+  # Redefine "true" beta in the case of missing variables
+  if (!is.null(omitted_variables)){
+    true.beta2 <- 0
+    for (i in 1:H1){
+      X <- get.X(cor.in = cor.X, n = H2*m, seed = i, nb.reg = length(true.beta))
+      y <- X%*%true.beta+rnorm(H2*m,sd=sigma)
+      true.beta2 <- true.beta2 + lm(y ~ X[,2:p] - 1)$coef
+    }
+    true_beta2 <- true_beta2/H1
+  }
+
   # Start bootstrap
   for (i in 1:nb_simu){
 
@@ -290,11 +302,21 @@ run_simulation <- function(nb_simu, true_beta, n, n_star, sigma, cor_X,
     X <- get.X(cor.in = cor_X, n = m, seed = i, nb.reg = p)
     y <- X%*%true_beta+rnorm(m,sd=sigma)
 
-    # Training and testing sets
-    y_train <- y[1:n]
-    y_test  <- y[(n + 1):m]
-    X_train <- X[1:n, ]
-    X_test  <- X[(n + 1):m, ]
+    # Omitted variables?
+    if (is.null(omitted_variables)){
+      # Training and testing sets
+      y_train <- y[1:n]
+      y_test  <- y[(n + 1):m]
+      X_train <- X[1:n, ]
+      X_test  <- X[(n + 1):m, ]
+    }else{
+      # Training and testing sets
+      y_train <- y[1:n]
+      y_test  <- y[(n + 1):m]
+      X_train <- X[1:n, -omitted_variables]
+      X_test  <- X[(n + 1):m, -omitted_variables]
+    }
+
 
     # Sure Screening if p > n
     if (p > (n - 1)){
@@ -401,10 +423,10 @@ run_simulation <- function(nb_simu, true_beta, n, n_star, sigma, cor_X,
     MSE.alasso[i]  <- sqrt(sum((beta.alasso[i, ] - true_beta)^2))
 
     # Full LS
-    mod.full     <- lm(y_train ~ X_train - 1)
-    beta.LS[i, ] <- coef(mod.full)
-    PE.LS[i]     <- (mean((X_test%*%beta.LS[i, ] - y_test)^2))
-    MSE.LS[i]    <- sqrt(sum((beta.LS[i, ] - true_beta)^2))
+    mod.full      <- lm(y_train ~ X_train[ ,K] - 1)
+    beta.LS[i, K] <- coef(mod.full)
+    PE.LS[i]      <- (mean((X_test%*%beta.LS[i, ] - y_test)^2))
+    MSE.LS[i]     <- sqrt(sum((beta.LS[i, ] - true_beta)^2))
   }
 
 
@@ -418,6 +440,9 @@ run_simulation <- function(nb_simu, true_beta, n, n_star, sigma, cor_X,
                                   "correct", "included", "true+",
                                   "false+", "# sel.")
 
+  if (!is.null(omitted_variables)){
+    true_beta <- true_beta2
+  }
   simu_out[1, ]  <- fill_result_matrix(PE.LS, MSE.LS, beta.LS, true_beta)
   simu_out[2, ]  <- fill_result_matrix(PE.step.AIC, MSE.step.AIC, beta.step.AIC, true_beta)
   simu_out[3, ]  <- fill_result_matrix(PE.step.BIC, MSE.step.BIC, beta.step.BIC, true_beta)
@@ -458,15 +483,23 @@ run_simulation <- function(nb_simu, true_beta, n, n_star, sigma, cor_X,
 
   if (is.null(title)){ title= "Simulation"}
 
-  plot(NA, xlim = xlim, ylim = ylim,
-       xlab = xlab, ylab = " ",
-       main = title, cex.lab = cex.lab,
-       cex.main = cex.main,
-       cex.axis = cex.axis)
+  #plot(NA, xlim = xlim, ylim = ylim,
+  #     xlab = xlab, ylab = " ",
+  #     main = title, cex.lab = cex.lab,
+  #     cex.main = cex.main,
+  #     cex.axis = cex.axis)
 
-  mtext(ylab, side = 2, line = 2.5, cex = cex.lab)
 
-  grid()
+
+  make_frame_no_transform(x_range = xlim,
+                          y_range = ylim,
+                          xlab = xlab,
+                          ylab = ylab,
+                          main = title)
+
+  #mtext(ylab, side = 2, line = 2.5, cex = cex.lab)
+
+  #grid()
 
   # Add points
   add_point(PE.scad, MSE.scad, coleur[1], coleurTrans[1], point.pch[1])
