@@ -261,11 +261,13 @@ run_simulation <- function(nb_simu, true_beta, n, n_star, sigma, cor_X,
                            cex.main = 1.25,
                            cex.axis = 1.25,
                            adaptive = TRUE,
-                           omitted_variables = NULL){
+                           omitted_variables = NULL,
+                           H1 = 10, H2 = 500,
+                           x_inter = NULL){
 
   # True parameters
   true_beta <- true_beta
-  p <- length(true_beta)
+  p <- length(true_beta) - length(omitted_variables)
   m <- n + n_star
 
   # Initialisation
@@ -277,29 +279,41 @@ run_simulation <- function(nb_simu, true_beta, n, n_star, sigma, cor_X,
   # Prediciton error
   PE.pdc <- PE.apdc <- PE.lasso <- PE.enet <- PE.alasso <- PE.mcp <-
     PE.scad <- PE.step.AIC <- PE.step.BIC <- PE.step.HQ <-
-    PE.true <- PE.LS <- rep(NA,nb_simu)
+    PE.true <- PE.LS <- rep(NA, nb_simu)
 
   # Beta MSE
   MSE.pdc <- MSE.apdc <- MSE.lasso <- MSE.enet <- MSE.alasso <-
     MSE.mcp <- MSE.scad <- MSE.step.AIC <- MSE.step.BIC <-
-    MSE.step.HQ <- MSE.true <- MSE.LS <- rep(NA,nb_simu)
+    MSE.step.HQ <- MSE.true <- MSE.LS <- rep(NA, nb_simu)
 
   # Redefine "true" beta in the case of missing variables
   if (!is.null(omitted_variables)){
-    true.beta2 <- 0
+    true_beta2 <- 0
     for (i in 1:H1){
-      X <- get.X(cor.in = cor.X, n = H2*m, seed = i, nb.reg = length(true.beta))
-      y <- X%*%true.beta+rnorm(H2*m,sd=sigma)
-      true.beta2 <- true.beta2 + lm(y ~ X[,2:p] - 1)$coef
+      X <- get.X(cor.in = cor_X, n = H2*m, seed = i, nb.reg = length(true_beta))
+
+      if (!is.null(x_inter)){
+        X[,omitted_variables] = X[,omitted_variables]*x_inter[1:(H2*m)]
+      }
+
+      y <- X%*%true_beta+rnorm(H2*m,sd=sigma)
+      true_beta2 <- true_beta2 + lm(y ~ X[,-omitted_variables] - 1)$coef
     }
     true_beta2 <- true_beta2/H1
+  }else{
+    true_beta2 <- true_beta
   }
 
   # Start bootstrap
   for (i in 1:nb_simu){
 
     # Simulate data set
-    X <- get.X(cor.in = cor_X, n = m, seed = i, nb.reg = p)
+    X <- get.X(cor.in = cor_X, n = m, seed = i, nb.reg = (p+length(omitted_variables)))
+
+    if (!is.null(x_inter)){
+      X[,omitted_variables] = X[,omitted_variables]*x_inter[1:m]
+    }
+
     y <- X%*%true_beta+rnorm(m,sd=sigma)
 
     # Omitted variables?
@@ -329,7 +343,7 @@ run_simulation <- function(nb_simu, true_beta, n, n_star, sigma, cor_X,
     res.pdc        <- pdc(y_train, X_train[, K], intercept = FALSE, adaptive = adaptive)
     beta.pdc[i, K] <- res.pdc$beta.hat
     PE.pdc[i]      <- (mean((X_test%*%beta.pdc[i, ] - y_test)^2))
-    MSE.pdc[i]     <- sqrt(sum((beta.pdc[i, ] - true_beta)^2))
+    MSE.pdc[i]     <- sqrt(sum((beta.pdc[i, ] - true_beta2)^2))
 
     #res.apdc      <- adaptive.pdc(y_train, X_train)
     #beta.apdc[i, ] <- res.apdc$beta.hat
@@ -340,23 +354,19 @@ run_simulation <- function(nb_simu, true_beta, n, n_star, sigma, cor_X,
     beta.step.BIC[i, K] <- STEP.AIC(y_train, X_train[, K], method = "BIC",
                                     adaptive = adaptive)$beta.hat
     PE.step.BIC[i]      <- (mean((X_test%*%beta.step.BIC[i, ] - y_test)^2))
-    MSE.step.BIC[i]     <- sqrt(sum((beta.step.BIC[i, ] - true_beta)^2))
+    MSE.step.BIC[i]     <- sqrt(sum((beta.step.BIC[i, ] - true_beta2)^2))
 
     # Step AIC
     beta.step.AIC[i, K] <- STEP.AIC(y_train, X_train[, K], method = "AIC",
                                    adaptive = adaptive)$beta.hat
     PE.step.AIC[i]      <- (mean((X_test%*%beta.step.AIC[i, ] - y_test)^2))
-    MSE.step.AIC[i]     <- sqrt(sum((beta.step.AIC[i, ] - true_beta)^2))
+    MSE.step.AIC[i]     <- sqrt(sum((beta.step.AIC[i, ] - true_beta2)^2))
 
     # Step HQ
     beta.step.HQ[i, K]  <- STEP.AIC(y_train, X_train[, K], method = "HQ",
                                    adaptive = adaptive)$beta.hat
     PE.step.HQ[i]       <- (mean((X_test%*%beta.step.HQ[i, ] - y_test)^2))
-    MSE.step.HQ[i]      <- sqrt(sum((beta.step.HQ[i, ] - true_beta)^2))
-
-    # True (best model)
-    PE.true[i]  <- (sum((X_test%*%true_beta-y_test)^2))
-    MSE.true[i] <- 0
+    MSE.step.HQ[i]      <- sqrt(sum((beta.step.HQ[i, ] - true_beta2)^2))
 
     # Lasso
     fitnet  <- cv.glmnet(y = y_train, x = X_train, intercept = FALSE, standardize = FALSE)
@@ -365,7 +375,7 @@ run_simulation <- function(nb_simu, true_beta, n, n_star, sigma, cor_X,
 
     beta.lasso[i, ] <- fitnet0$beta[ ,ind]
     PE.lasso[i]    <- (mean((X_test%*%beta.lasso[i, ] - y_test)^2))
-    MSE.lasso[i]   <- sqrt(sum((beta.lasso[i, ] - true_beta)^2))
+    MSE.lasso[i]   <- sqrt(sum((beta.lasso[i, ] - true_beta2)^2))
 
     # Fit elastic net
     fitnet1 <- cv.glmnet(y = y_train,x = X_train, alpha = 0.25, intercept = FALSE, standardize = FALSE)
@@ -397,7 +407,7 @@ run_simulation <- function(nb_simu, true_beta, n, n_star, sigma, cor_X,
 
     beta.enet[i, ] <- fitnet0$beta[ ,ind]
     PE.enet[i]     <- (mean((X_test%*%beta.enet[i, ] - y_test)^2))
-    MSE.enet[i]    <- sqrt(sum((beta.enet[i, ] - true_beta)^2))
+    MSE.enet[i]    <- sqrt(sum((beta.enet[i, ] - true_beta2)^2))
 
 
     # MCP
@@ -405,7 +415,7 @@ run_simulation <- function(nb_simu, true_beta, n, n_star, sigma, cor_X,
     fit <- cvfit$fit
     beta.mcp[i, ] <- as.vector(fit$beta[2:(p+1), cvfit$min])
     PE.mcp[i]   <- (mean((fit$beta[1] + X_test%*%beta.mcp[i, ] - y_test)^2))
-    MSE.mcp[i]  <- sqrt(sum((beta.mcp[i, ] - true_beta)^2))
+    MSE.mcp[i]  <- sqrt(sum((beta.mcp[i, ] - true_beta2)^2))
 
     # SCAD
     cvfit <- cv.ncvreg(X_train, y_train, familiy = "gaussian",
@@ -414,19 +424,19 @@ run_simulation <- function(nb_simu, true_beta, n, n_star, sigma, cor_X,
     beta <- fit$beta[ ,cvfit$min]
     beta.scad[i, ] <- fit$beta[2:(p+1), cvfit$min]
     PE.scad[i]  <- (mean((fit$beta[1] + X_test%*%beta.scad[i, ] - y_test)^2))
-    MSE.scad[i] <- sqrt(sum((beta.scad[i, ] - true_beta)^2))
+    MSE.scad[i] <- sqrt(sum((beta.scad[i, ] - true_beta2)^2))
 
     # Adaptive lasso
     fit <- adalasso(X_train, y_train, k = 10)
     beta.alasso[i, ] <- fit$coefficients.adalasso
     PE.alasso[i]  <- (mean((X_test%*%beta.alasso[i, ] - y_test)^2))
-    MSE.alasso[i]  <- sqrt(sum((beta.alasso[i, ] - true_beta)^2))
+    MSE.alasso[i]  <- sqrt(sum((beta.alasso[i, ] - true_beta2)^2))
 
     # Full LS
     mod.full      <- lm(y_train ~ X_train[ ,K] - 1)
     beta.LS[i, K] <- coef(mod.full)
     PE.LS[i]      <- (mean((X_test%*%beta.LS[i, ] - y_test)^2))
-    MSE.LS[i]     <- sqrt(sum((beta.LS[i, ] - true_beta)^2))
+    MSE.LS[i]     <- sqrt(sum((beta.LS[i, ] - true_beta2)^2))
   }
 
 
@@ -443,16 +453,16 @@ run_simulation <- function(nb_simu, true_beta, n, n_star, sigma, cor_X,
   if (!is.null(omitted_variables)){
     true_beta <- true_beta2
   }
-  simu_out[1, ]  <- fill_result_matrix(PE.LS, MSE.LS, beta.LS, true_beta)
-  simu_out[2, ]  <- fill_result_matrix(PE.step.AIC, MSE.step.AIC, beta.step.AIC, true_beta)
-  simu_out[3, ]  <- fill_result_matrix(PE.step.BIC, MSE.step.BIC, beta.step.BIC, true_beta)
-  simu_out[4, ]  <- fill_result_matrix(PE.step.HQ, MSE.step.HQ, beta.step.HQ, true_beta)
-  simu_out[5, ]  <- fill_result_matrix(PE.lasso, MSE.lasso, beta.lasso, true_beta)
-  simu_out[6, ]  <- fill_result_matrix(PE.pdc, MSE.pdc, beta.pdc, true_beta)
-  simu_out[7, ]  <- fill_result_matrix(PE.enet, MSE.enet, beta.enet, true_beta)
-  simu_out[8, ]  <- fill_result_matrix(PE.alasso, MSE.alasso, beta.alasso, true_beta)
-  simu_out[9, ]  <- fill_result_matrix(PE.mcp, MSE.mcp, beta.mcp, true_beta)
-  simu_out[10, ] <- fill_result_matrix(PE.scad, MSE.scad, beta.scad, true_beta)
+  simu_out[1, ]  <- fill_result_matrix(PE.LS, MSE.LS, beta.LS, true_beta, omitted_variables)
+  simu_out[2, ]  <- fill_result_matrix(PE.step.AIC, MSE.step.AIC, beta.step.AIC, true_beta, omitted_variables)
+  simu_out[3, ]  <- fill_result_matrix(PE.step.BIC, MSE.step.BIC, beta.step.BIC, true_beta, omitted_variables)
+  simu_out[4, ]  <- fill_result_matrix(PE.step.HQ, MSE.step.HQ, beta.step.HQ, true_beta, omitted_variables)
+  simu_out[5, ]  <- fill_result_matrix(PE.lasso, MSE.lasso, beta.lasso, true_beta, omitted_variables)
+  simu_out[6, ]  <- fill_result_matrix(PE.pdc, MSE.pdc, beta.pdc, true_beta, omitted_variables)
+  simu_out[7, ]  <- fill_result_matrix(PE.enet, MSE.enet, beta.enet, true_beta, omitted_variables)
+  simu_out[8, ]  <- fill_result_matrix(PE.alasso, MSE.alasso, beta.alasso, true_beta, omitted_variables)
+  simu_out[9, ]  <- fill_result_matrix(PE.mcp, MSE.mcp, beta.mcp, true_beta, omitted_variables)
+  simu_out[10, ] <- fill_result_matrix(PE.scad, MSE.scad, beta.scad, true_beta, omitted_variables)
 
   # Make graph
   coleur = ggplot_like_colors(10)
@@ -551,14 +561,20 @@ add_point <- function(PE, MSE, couleur, couleur_trans, point_pch){
 }
 
 #' @export
-fill_result_matrix <- function(PE.meth, MSE.meth, beta.meth, true_beta){
-  output <- rep(NA, 9)
+fill_result_matrix <- function(PE.meth, MSE.meth, beta.meth, true_beta, omit){
+  output <- rep(0, 9)
   output[1] <- median(PE.meth)
   output[2] <- boot.med(PE.meth)
   output[3] <- median(MSE.meth^2)
   output[4] <- boot.med(MSE.meth^2)
-  output[5] <- 100*mean(apply(beta.meth, 1, is_correct, beta = true_beta))
-  output[6] <- 100*mean(apply(beta.meth, 1, is_included, beta = true_beta))
+  if (is.null(omit)){
+    output[5] <- 100*mean(apply(beta.meth, 1, is_correct, beta = true_beta))
+  }
+
+  if (is.null(omit)){
+    output[6] <- 100*mean(apply(beta.meth, 1, is_included, beta = true_beta))
+  }
+
   output[7] <- mean(apply(beta.meth, 1, nb_signif, beta = true_beta))
   output[8] <- mean(apply(beta.meth, 1, nb_false_pos, beta = true_beta))
   output[9] <- mean(apply(beta.meth, 1, nb_selected))

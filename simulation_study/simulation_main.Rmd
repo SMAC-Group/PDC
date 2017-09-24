@@ -184,4 +184,333 @@ kable(simu3_part2_non_ada)
 ```
 
 
+## Simulation 4
+   
+### Case 1: $n > p$ - adaptive greedy 
+
+```{r simu4_case1_adaptive, fig.align='center', cache = TRUE, fig.height=5, fig.width=6}
+beta <- c(rep(c(2,0,1),2),rep(0,16),rep(0.1,6),rep(0,16),rep(c(2,0,1),2))
+simu4_part1_ada <- run_simulation(nb_simu = 500, true_beta = beta,
+                              n = 100, n_star = 1000, sigma = 2, cor_X = 0.5,
+                              xlim = c(0.73,100.4), ylim = c(0.0079,20.8),   
+                              xlab = expression(PE[y]), 
+                              ylab = expression(MSE[beta]), 
+                              title = "Simulation 4: n > p",
+                              adaptive = TRUE, omitted_variables = 1)
+kable(simu4_part1_ada) 
+```
+
+
+### Case 2: $n > p$ - nonadaptive greedy 
+
+```{r simu4_case1_nonadaptive, fig.align='center', cache = TRUE, fig.height=5, fig.width=6}
+beta <- c(rep(c(2,0,1),2),rep(0,16),rep(0.1,6),rep(0,16),rep(c(2,0,1),2))
+simu4_part1_nonada <- run_simulation(nb_simu = 500, true_beta = beta,
+                              n = 100, n_star = 1000, sigma = 2, cor_X = 0.5,
+                              xlim = c(0.73,100.4), ylim = c(0.0079,20.8),   
+                              xlab = expression(PE[y]), 
+                              ylab = expression(MSE[beta]), 
+                              title = "Simulation 4: n > p",
+                              adaptive = FALSE, omitted_variables = 1)
+kable(simu4_part1_nonada) 
+```
+
+
+
+### Case 3: $n < p$ - adaptive greedy 
+
+```{r simu4_case2_adaptive, fig.align='center', cache = TRUE, fig.height=5, fig.width=6}
+beta <- c(rep(c(2,0,1),2),rep(0,16),rep(0.1,6),rep(0,16),rep(c(2,0,1),2), rep(0, 100))
+simu4_part2_ada <- run_simulation(nb_simu = 500, true_beta = beta,
+                              n = 100, n_star = 1000, sigma = 2, cor_X = 0.5,
+                              xlim = c(0.73,100.4), ylim = c(0.0079,20.8),   
+                              xlab = expression(PE[y]), 
+                              ylab = expression(MSE[beta]), 
+                              title = "Simulation 4: n < p",
+                              adaptive = TRUE, omitted_variables = 1)
+kable(simu4_part2_ada) 
+```
+
+
+### Case 4: $n < p$ - nonadaptive greedy 
+
+```{r simu4_case2_nonadaptive, fig.align='center', cache = TRUE, fig.height=5, fig.width=6}
+beta <- c(rep(c(2,0,1),2),rep(0,16),rep(0.1,6),rep(0,16),rep(c(2,0,1),2), rep(0, 100))
+simu4_part2_nonada <- run_simulation(nb_simu = 500, true_beta = beta,
+                              n = 100, n_star = 1000, sigma = 2, cor_X = 0.5,
+                              xlim = c(0.73,100.4), ylim = c(0.0079,20.8),   
+                              xlab = expression(PE[y]), 
+                              ylab = expression(MSE[beta]), 
+                              title = "Simulation 4: n < p",
+                              adaptive = FALSE, omitted_variables = 1)
+kable(simu4_part2_nonada) 
+```
+
+
+
+
+## Simulation 5
+   
+### Case 1: $n > p$ - adaptive greedy 
+ 
+```{r simu5_case1_adaptive, fig.align='center', cache = TRUE, fig.height=5, fig.width=6}
+beta <- c(3,rep(0,5),1,rep(0,10),rep(0.05,3),rep(0,10),2,rep(0,20))
+simu5_part1_ada <- run_simulation(nb_simu = 500, true_beta = beta,
+                              n = 100, n_star = 1000, sigma = 3, cor_X = 0.25,
+                              xlim = c(19.3,20.2), ylim = c(1.6,2.75), 
+                              xlab = expression(PE[y]), 
+                              ylab = expression(MSE[beta]), 
+                              title = "Simulation 5: n > p",
+                              adaptive = TRUE, omitted_variables = 1)
+kable(simu5_part1_ada)  
+```
+
+
+### Case 2: $n > p$ - nonadaptive greedy 
+
+```{r simu5_case1_nonadaptive, fig.align='center', cache = TRUE, fig.height=5, fig.width=6}
+beta <- c(3,rep(0,5),1,rep(0,10),rep(0.05,3),rep(0,10),2,rep(0,20))
+simu5_part1_nonada <- run_simulation(nb_simu = 500, true_beta = beta,
+                              n = 100, n_star = 1000, sigma = 3, cor_X = 0.25,
+                              xlim = c(19.3,20.2), ylim = c(1.6,2.75), 
+                              xlab = expression(PE[y]), 
+                              ylab = expression(MSE[beta]), 
+                              title = "Simulation 5: n > p",
+                              adaptive = FALSE, omitted_variables = 1)
+kable(simu5_part1_nonada)  
+```
+
+
+   
+### Case 3: $n < p$ - adaptive greedy 
+
+```{r simu5_case2_adaptive, fig.align='center', cache = TRUE, fig.height=5, fig.width=6}
+beta <- c(3,rep(0,5),1,rep(0,10),rep(0.05,3),rep(0,10),2,rep(0,120))
+simu5_part2_ada <- run_simulation(nb_simu = 500, true_beta = beta,
+                              n = 100, n_star = 1000, sigma = 3, cor_X = 0.25,
+                              xlim = c(19.3,22), ylim = c(2,3.5),
+                              xlab = expression(PE[y]), 
+                              ylab = expression(MSE[beta]), 
+                              title = "Simulation 5: n < p",
+                              adaptive = TRUE, omitted_variables = 1)
+kable(simu5_part2_ada)  
+```
+
+
+### Case 4: $n < p$ - nonadaptive greedy 
+
+```{r simu5_case2_nonadaptive, fig.align='center', cache = TRUE, fig.height=5, fig.width=6}
+beta <- c(3,rep(0,5),1,rep(0,10),rep(0.05,3),rep(0,10),2,rep(0,120))
+simu5_part2_nonada <- run_simulation(nb_simu = 500, true_beta = beta,
+                              n = 100, n_star = 1000, sigma = 3, cor_X = 0.25,
+                              xlim = c(19.3,22), ylim = c(2,3.5),
+                              xlab = expression(PE[y]), 
+                              ylab = expression(MSE[beta]), 
+                              title = "Simulation 5: n < p",
+                              adaptive = FALSE, omitted_variables = 1)
+kable(simu5_part2_nonada)  
+```
+
+
+
+
+
+
+
+
+
+
+
+
+## Simulation 6
+   
+### Case 1: $n > p$ - adaptive greedy 
+ 
+```{r simu6_case1_adaptive, fig.align='center', cache = TRUE, fig.height=5, fig.width=6}
+beta <- c(3,rep(0,5),1,rep(0,10),rep(0.05,3),rep(0,10),2,rep(0,20))
+simu6_part1_ada <- run_simulation(nb_simu = 500, true_beta = beta,
+                              n = 100, n_star = 1000, sigma = 3, cor_X = 0.25,
+                              xlab = expression(PE[y]), 
+                              ylab = expression(MSE[beta]), 
+                              title = "Simulation 6: n > p",
+                              adaptive = TRUE)
+kable(simu6_part1_ada)  
+```
+
+
+### Case 2: $n > p$ - nonadaptive greedy 
+
+```{r simu6_case1_nonadaptive, fig.align='center', cache = TRUE, fig.height=5, fig.width=6}
+beta <- c(3,rep(0,5),1,rep(0,10),rep(0.05,3),rep(0,10),2,rep(0,20))
+simu6_part1_nonada <- run_simulation(nb_simu = 500, true_beta = beta,
+                              n = 100, n_star = 1000, sigma = 3, cor_X = 0.25,
+                              xlab = expression(PE[y]), 
+                              ylab = expression(MSE[beta]), 
+                              title = "Simulation 6: n > p",
+                              adaptive = FALSE)
+kable(simu6_part1_nonada)  
+```
+
+
+   
+### Case 3: $n < p$ - adaptive greedy 
+
+```{r simu6_case2_adaptive, fig.align='center', cache = TRUE, fig.height=5, fig.width=6}
+beta <- c(3,rep(0,5),1,rep(0,10),rep(0.05,3),rep(0,10),2,rep(0,120))
+simu6_part2_ada <- run_simulation(nb_simu = 500, true_beta = beta,
+                              n = 100, n_star = 1000, sigma = 3, cor_X = 0.25,
+                              xlab = expression(PE[y]), 
+                              ylab = expression(MSE[beta]), 
+                              title = "Simulation 6: n < p",
+                              adaptive = TRUE)
+kable(simu6_part2_ada)  
+```
+
+
+### Case 4: $n < p$ - nonadaptive greedy 
+
+```{r simu6_case2_nonadaptive, fig.align='center', cache = TRUE, fig.height=5, fig.width=6}
+beta <- c(3,rep(0,5),1,rep(0,10),rep(0.05,3),rep(0,10),2,rep(0,120))
+simu6_part2_nonada <- run_simulation(nb_simu = 500, true_beta = beta,
+                              n = 100, n_star = 1000, sigma = 3, cor_X = 0.25,
+                              xlab = expression(PE[y]), 
+                              ylab = expression(MSE[beta]), 
+                              title = "Simulation 6: n < p",
+                              adaptive = FALSE)
+kable(simu6_part2_nonada)  
+```
+
+
+
+
+
+## Simulation 7
+   
+### Case 1: $n > p$ - adaptive greedy 
+ 
+```{r simu7_case1_adaptive, fig.align='center', cache = TRUE, fig.height=5, fig.width=6}
+beta <- c(3,rep(0,5),1,rep(0,10),rep(0.05,3),rep(0,10),2,rep(0,20))
+simu7_part1_ada <- run_simulation(nb_simu = 500, true_beta = beta,
+                              n = 100, n_star = 1000, sigma = 3, cor_X = 0.75,
+                              xlab = expression(PE[y]), 
+                              ylab = expression(MSE[beta]), 
+                              title = "Simulation 7: n > p",
+                              adaptive = TRUE)
+kable(simu7_part1_ada)  
+```
+
+
+### Case 2: $n > p$ - nonadaptive greedy 
+
+```{r simu7_case1_nonadaptive, fig.align='center', cache = TRUE, fig.height=5, fig.width=6}
+beta <- c(3,rep(0,5),1,rep(0,10),rep(0.05,3),rep(0,10),2,rep(0,20))
+simu7_part1_nonada <- run_simulation(nb_simu = 500, true_beta = beta,
+                              n = 100, n_star = 1000, sigma = 3, cor_X = 0.75,
+                              xlab = expression(PE[y]), 
+                              ylab = expression(MSE[beta]), 
+                              title = "Simulation 7: n > p",
+                              adaptive = FALSE)
+kable(simu7_part1_nonada)  
+```
+
+
+   
+### Case 3: $n < p$ - adaptive greedy 
+
+```{r simu7_case2_adaptive, fig.align='center', cache = TRUE, fig.height=5, fig.width=6}
+beta <- c(3,rep(0,5),1,rep(0,10),rep(0.05,3),rep(0,10),2,rep(0,120))
+simu7_part2_ada <- run_simulation(nb_simu = 500, true_beta = beta,
+                              n = 100, n_star = 1000, sigma = 3, cor_X = 0.75,
+                              xlab = expression(PE[y]), 
+                              ylab = expression(MSE[beta]), 
+                              title = "Simulation 7: n < p",
+                              adaptive = TRUE)
+kable(simu7_part2_ada)  
+```
+
+
+### Case 4: $n < p$ - nonadaptive greedy 
+
+```{r simu7_case2_nonadaptive, fig.align='center', cache = TRUE, fig.height=5, fig.width=6}
+beta <- c(3,rep(0,5),1,rep(0,10),rep(0.05,3),rep(0,10),2,rep(0,120))
+simu7_part2_nonada <- run_simulation(nb_simu = 500, true_beta = beta,
+                              n = 100, n_star = 1000, sigma = 3, cor_X = 0.75,
+                              xlab = expression(PE[y]), 
+                              ylab = expression(MSE[beta]), 
+                              title = "Simulation 7: n < p",
+                              adaptive = FALSE)
+kable(simu7_part2_nonada)  
+```
+
+
+
+
+
+ 
+
+## Simulation 8
+   
+### Case 1: $n > p$ - adaptive greedy 
+ 
+```{r simu8_case1_adaptive, fig.align='center', cache = TRUE, fig.height=5, fig.width=6}
+beta <- c(3,rep(0,5),1,rep(0,10),rep(0.05,3),rep(0,10),2,rep(0,20))
+simu8_part1_ada <- run_simulation(nb_simu = 500, true_beta = beta,
+                              n = 100, n_star = 1000, sigma = 3, cor_X = 0.75,
+                              xlab = expression(PE[y]), 
+                              ylab = expression(MSE[beta]), 
+                              title = "Simulation 8: n < p",
+                              omitted_variables = 1, 
+                              x_inter = rpois((100 + 1000)*500, lambda = 1),
+                              adaptive = TRUE)
+kable(simu8_part1_ada)  
+```
+
+
+### Case 2: $n > p$ - nonadaptive greedy 
+
+```{r simu8_case1_nonadaptive, fig.align='center', cache = TRUE, fig.height=5, fig.width=6}
+beta <- c(3,rep(0,5),1,rep(0,10),rep(0.05,3),rep(0,10),2,rep(0,20))
+simu8_part1_nonada <- run_simulation(nb_simu = 500, true_beta = beta,
+                              n = 100, n_star = 1000, sigma = 3, cor_X = 0.75,
+                              xlab = expression(PE[y]), 
+                              ylab = expression(MSE[beta]), 
+                              title = "Simulation 8: n < p",
+                              omitted_variables = 1, 
+                              x_inter = rpois((100 + 1000)*500, lambda = 1),
+                              adaptive = FALSE)
+kable(simu8_part1_nonada)  
+```
+
+
+   
+### Case 3: $n < p$ - adaptive greedy 
+
+```{r simu8_case2_adaptive, fig.align='center', cache = TRUE, fig.height=5, fig.width=6}
+beta <- c(3,rep(0,5),1,rep(0,10),rep(0.05,3),rep(0,10),2,rep(0,120))
+simu8_part2_ada <- run_simulation(nb_simu = 500, true_beta = beta,
+                              n = 100, n_star = 1000, sigma = 3, cor_X = 0.75,
+                              xlab = expression(PE[y]), 
+                              ylab = expression(MSE[beta]), 
+                              title = "Simulation 8: n < p",
+                              omitted_variables = 1, 
+                              x_inter = rpois((100 + 1000)*500, lambda = 1),
+                              adaptive = TRUE)
+kable(simu8_part2_ada)  
+```
+
+
+### Case 4: $n < p$ - nonadaptive greedy 
+
+```{r simu8_case2_nonadaptive, fig.align='center', cache = TRUE, fig.height=5, fig.width=6}
+beta <- c(3,rep(0,5),1,rep(0,10),rep(0.05,3),rep(0,10),2,rep(0,120))
+simu8_part2_nonada <- run_simulation(nb_simu = 500, true_beta = beta,
+                              n = 100, n_star = 1000, sigma = 3, cor_X = 0.75,
+                              xlab = expression(PE[y]), 
+                              ylab = expression(MSE[beta]), 
+                              title = "Simulation 8: n < p",
+                              omitted_variables = 1, 
+                              x_inter = rpois((100 + 1000)*500, lambda = 1),
+                              adaptive = FALSE)
+kable(simu8_part2_nonada)  
+```
 
