@@ -256,10 +256,6 @@ median_multivariate_cov_bootstrap <- function(X, B = 500){
 #' @export
 #' @author Marco Andres Avella Medina and Stéphane Guerrier
 run_simulation <- function(nb_simu, true_beta, n, n_star, sigma, cor_X,
-                           xlim = NULL, ylim = NULL, xlab = NULL, ylab = NULL,
-                           title = NULL, cex.lab = 1.25,
-                           cex.main = 1.25,
-                           cex.axis = 1.25,
                            adaptive = TRUE,
                            omitted_variables = NULL,
                            H1 = 10, H2 = 500,
@@ -464,100 +460,47 @@ run_simulation <- function(nb_simu, true_beta, n, n_star, sigma, cor_X,
   simu_out[9, ]  <- fill_result_matrix(PE.mcp, MSE.mcp, beta.mcp, true_beta)
   simu_out[10, ] <- fill_result_matrix(PE.scad, MSE.scad, beta.scad, true_beta)
 
-  # Make graph
-  coleur = ggplot_like_colors(10)
-  coleurTrans = ggplot_like_colors(10, alpha = 0.08)
-  point.pch = c(15:18,21:25,7)
 
-  if (is.null(xlim)){
-    xlim <- range(c(median(PE.scad), median(PE.pdc),
-                   median(PE.lasso), median(PE.enet),
-                   median(PE.alasso), median(PE.mcp),
-                   median(PE.step.AIC),
-                   median(PE.step.BIC), median(PE.step.HQ),
-                   median(PE.LS)))
-  }
-
-  if (is.null(ylim)){
-    ylim <- range(c(mean(apply(beta.LS, 1, nb_selected)),
-                    mean(apply(beta.lasso, 1, nb_selected)),
-                    mean(apply(beta.enet, 1, nb_selected)),
-                    mean(apply(beta.alasso, 1, nb_selected)),
-                    mean(apply(beta.mcp, 1, nb_selected)),
-                    mean(apply(beta.scad, 1, nb_selected)),
-                    mean(apply(beta.pdc, 1, nb_selected)),
-                    mean(apply(beta.step.AIC, 1, nb_selected)),
-                    mean(apply(beta.step.BIC, 1, nb_selected)),
-                    mean(apply(beta.step.HQ, 1, nb_selected))))
-  }
-
-  if (is.null(xlab)){ xlab = "Med(PE)" }
-
-  if (is.null(ylab)){ ylab = "Med(MSE)" }
-
-  if (is.null(title)){ title= "Simulation"}
-
-  #plot(NA, xlim = xlim, ylim = ylim,
-  #     xlab = xlab, ylab = " ",
-  #     main = title, cex.lab = cex.lab,
-  #     cex.main = cex.main,
-  #     cex.axis = cex.axis)
-
-
-
-  make_frame_no_transform(x_range = xlim,
-                          y_range = ylim,
-                          xlab = xlab,
-                          ylab = ylab,
-                          main = title)
-
-  #mtext(ylab, side = 2, line = 2.5, cex = cex.lab)
-
-  #grid()
-
-  # Add points
-  add_point(PE.scad, beta.scad, coleur[1], coleurTrans[1], point.pch[1])
-  add_point(PE.alasso, beta.alasso, coleur[2], coleurTrans[2], point.pch[2])
-  add_point(PE.lasso, beta.lasso, coleur[3], coleurTrans[3], point.pch[3])
-  add_point(PE.mcp, beta.mcp, coleur[4], coleurTrans[4], point.pch[4])
-  add_point(PE.pdc, beta.pdc, coleur[5], coleurTrans[5], point.pch[5])
-  add_point(PE.enet, beta.enet, coleur[6], coleurTrans[6], point.pch[6])
-  add_point(PE.step.AIC, beta.step.AIC, coleur[7], coleurTrans[7], point.pch[8])
-  add_point(PE.step.BIC, beta.step.BIC, coleur[8], coleurTrans[8], point.pch[8])
-  add_point(PE.step.HQ, beta.step.HQ, coleur[9], coleurTrans[9], point.pch[9])
-  add_point(PE.LS, beta.LS, coleur[10], coleurTrans[10], point.pch[10])
-
-  # Check which lab to display in legend
-  leg_indic = rep(NA, 10)
-  leg_indic[1]  <- add_legend(median(PE.scad), mean(apply(beta.scad, 1, nb_selected)), xlim, ylim)
-  leg_indic[2]  <- add_legend(median(PE.alasso), mean(apply(beta.alasso, 1, nb_selected)), xlim, ylim)
-  leg_indic[3]  <- add_legend(median(PE.lasso), mean(apply(beta.lasso, 1, nb_selected)), xlim, ylim)
-  leg_indic[4]  <- add_legend(median(PE.mcp), mean(apply(beta.mcp, 1, nb_selected)), xlim, ylim)
-  leg_indic[5]  <- add_legend(median(PE.pdc), mean(apply(beta.pdc, 1, nb_selected)), xlim, ylim)
-  leg_indic[6]  <- add_legend(median(PE.enet), mean(apply(beta.enet, 1, nb_selected)), xlim, ylim)
-  leg_indic[7]  <- add_legend(median(PE.step.AIC), mean(apply(beta.step.AIC, 1, nb_selected)), xlim, ylim)
-  leg_indic[8]  <- add_legend(median(PE.step.BIC), mean(apply(beta.step.BIC, 1, nb_selected)), xlim, ylim)
-  leg_indic[9]  <- add_legend(median(PE.step.HQ), mean(apply(beta.step.HQ, 1, nb_selected)), xlim, ylim)
-  leg_indic[10] <- add_legend(median(PE.LS), mean(beta.LS), xlim, ylim)
-
-  leg_lab = c("SCAD", "alasso", "lasso", "MCP", "PDC",
-              "enet", "AIC", "BIC", "HQ", "LS")
-  leg_pt = c(1.5, 1.5, 1.4, 1.5, 1.8, rep(1.4, 5))
-  if (sum(leg_indic) > 0){
-    legend("topleft", leg_lab[leg_indic],
-           pch = point.pch[leg_indic], col = coleur[leg_indic],
-           pt.cex = leg_pt[leg_indic],
-           bty = "n", cex = 1.2)
-  }
-
-  # Output
-  simu_out
+  output = list(summary_table = simu_out,
+                PE.scad = PE.scad,
+                PE.enet = PE.enet,
+                PE.alasso = PE.alasso,
+                PE.lasso = PE.lasso,
+                PE.mcp = PE.mcp,
+                PE.pdc = PE.pdc,
+                PE.step.AIC = PE.step.AIC,
+                PE.step.BIC = PE.step.BIC,
+                PE.step.HQ = PE.step.HQ,
+                PE.LS = PE.LS,
+                MSE.scad = MSE.scad,
+                MSE.enet = MSE.enet,
+                MSE.alasso = MSE.alasso,
+                MSE.lasso = MSE.lasso,
+                MSE.mcp = MSE.mcp,
+                MSE.pdc = MSE.pdc,
+                MSE.step.AIC = MSE.step.AIC,
+                MSE.step.BIC = MSE.step.BIC,
+                MSE.step.HQ = MSE.step.HQ,
+                MSE.LS = MSE.LS,
+                beta.LS = beta.LS,
+                beta.lasso = beta.lasso,
+                beta.enet = beta.enet,
+                beta.alasso = beta.alasso,
+                beta.mcp = beta.mcp,
+                beta.scad = beta.scad,
+                beta.pdc = beta.pdc,
+                beta.step.AIC = beta.step.AIC,
+                beta.step.BIC = beta.step.BIC,
+                beta.step.HQ = beta.step.HQ,
+                beta0 = true_beta)
+  class(output) = "simulation"
+  output
 }
 
 #' @export
-add_point <- function(PE, beta, couleur, couleur_trans, point_pch){
-  point.meth <- c(median(PE), mean(apply(beta, 1, nb_selected)))
-  mat.meth <- as.matrix(cbind(PE, apply(beta, 1, nb_selected)))
+add_point <- function(PE, myMSE, couleur, couleur_trans, point_pch){
+  point.meth <- c(median(PE), median(myMSE))
+  mat.meth <- as.matrix(cbind(PE, myMSE))
   cov.meth <- boot.conf.region(mat.meth, B = 1000)
   el.meth <- ellipse(cov.meth, centre = point.meth)
   points(point.meth[1],point.meth[2], pch = point_pch,
@@ -599,6 +542,7 @@ add_legend = function(x, y, xlim, ylim){
   (x > xlim[1] & x < xlim[2]) & (y > ylim[1] & y < ylim[2])
 }
 
+#' @export
 boot.mean <- function(x, B = 500){
   med = rep(NA,B)
   n = length(x)
@@ -608,3 +552,215 @@ boot.mean <- function(x, B = 500){
   mean.med = mean(med)
   return(sqrt(sum((med - mean.med)^2)/(B-1)))
 }
+
+#' @export
+make_correct_graph = function(simu, main = "Frequency of True Model Selection",
+                              ymax = NULL, add_max = NULL, coef = 1.05,
+                              cex.names = 1, cex.axis = 1, cex = 1){
+  correct = simu$summary_table[,5]
+  coleur = ggplot_like_colors(10, alpha = 0.7)
+  ord = c(10, 8, 5, 9, 6, 7, 2, 3, 4)
+  if (is.null(ymax)){
+    ymax = max(correct)*coef
+  }
+  a = barplot(correct[ord], col = coleur[1:9], main = main, ylim = c(0,ymax),
+          cex.names = cex.names, cex.axis = cex.axis,
+          cex.main = cex)
+  if (!is.null(add_max)){
+    points(a[which.max(correct[ord])], max(correct[ord]), col = "red", pch = 16, cex = 3)
+  }
+}
+
+#' @export
+make_included_graph = function(simu, main = "Frequency Model Including True Model", ymax = NULL){
+  correct = simu$summary_table[,6]
+  coleur = ggplot_like_colors(10, alpha = 0.7)
+  ord = c(10, 8, 5, 9, 6, 7, 2, 3, 4)
+  if (is.null(ymax)){
+    ymax = max(correct[ord])
+  }
+  barplot(correct[ord], col = coleur[1:9], main = main, ylim = c(0,ymax))
+}
+
+#' @export
+make_selected_graph = function(simu, main = "Average Number of Variables Selected",
+                               ymax = NULL, add_min = NULL,
+                               cex.names = 1, cex.axis = 1, cex = 1){
+  correct = simu$summary_table[,9]
+  coleur = ggplot_like_colors(10, alpha = 0.7)
+  ord = c(10, 8, 5, 9, 6, 7, 2, 3, 4)
+  if (is.null(ymax)){
+    ymax = max(correct[ord])
+  }
+    a = barplot(correct[ord], col = coleur[1:9], main = main, ylim = c(0,ymax),
+          cex.names = cex.names, cex.axis = cex.axis,
+          cex.main = cex)
+  if (!is.null(add_min)){
+    points(a[which.min(correct[ord])], min(correct[ord]), col = "red", pch = 16, cex = 3)
+  }
+}
+
+#' @export
+make_main_graph = function(simu, xlim = NULL, ylim = NULL, xlab = NULL,
+                           ylab = NULL, title = NULL, leg_pos = NULL,
+                           cex.legend = 1.2, cex.axis = 1,
+                           cex.lab = 1,
+                           cex.main = 1){
+  # Make graph
+  coleur = ggplot_like_colors(10)
+  coleurTrans = ggplot_like_colors(10, alpha = 0.08)
+  point.pch = c(15:18,21:25,7)
+
+  if (is.null(xlim)){
+    xlim <- range(c(median(simu$PE.scad), median(simu$PE.pdc),
+                    median(simu$PE.lasso), median(simu$PE.enet),
+                    median(simu$PE.alasso), median(simu$PE.mcp),
+                    median(simu$PE.step.AIC),
+                    median(simu$PE.step.BIC), median(simu$PE.step.HQ),
+                    median(simu$PE.LS)))
+  }
+
+  if (is.null(ylim)){
+    ylim <- range(c(median(simu$MSE.scad), median(simu$MSE.pdc),
+                    median(simu$MSE.lasso), median(simu$MSE.enet),
+                    median(simu$MSE.alasso), median(simu$MSE.mcp),
+                    median(simu$MSE.step.AIC),
+                    median(simu$MSE.step.BIC), median(simu$MSE.step.HQ),
+                    median(simu$MSE.LS)))
+  }
+
+  if (is.null(xlab)){ xlab = "Med(PE)" }
+
+  if (is.null(ylab)){ ylab = "Med(MSE)" }
+
+  if (is.null(title)){ title= "Simulation"}
+
+  #plot(NA, xlim = xlim, ylim = ylim,
+  #     xlab = xlab, ylab = " ",
+  #     main = title, cex.lab = cex.lab,
+  #     cex.main = cex.main,
+  #     cex.axis = cex.axis)
+
+
+  plot(NA, xlim = xlim, ylim = ylim, xlab = xlab,
+       ylab = ylab, main = title,
+       cex.axis = cex.axis,
+       cex.lab = cex.lab,
+       cex.main = cex.main)
+
+  #mtext(ylab, side = 2, line = 2.5, cex = cex.lab)
+
+  grid()
+
+  # Add points
+  add_point(simu$PE.scad, simu$MSE.scad, coleur[1], coleurTrans[1], point.pch[1])
+  add_point(simu$PE.alasso, simu$MSE.alasso, coleur[2], coleurTrans[2], point.pch[2])
+  add_point(simu$PE.lasso, simu$MSE.lasso, coleur[3], coleurTrans[3], point.pch[3])
+  add_point(simu$PE.mcp, simu$MSE.mcp, coleur[4], coleurTrans[4], point.pch[4])
+  add_point(simu$PE.pdc, simu$MSE.pdc, coleur[5], coleurTrans[5], point.pch[5])
+  add_point(simu$PE.enet, simu$MSE.enet, coleur[6], coleurTrans[6], point.pch[6])
+  add_point(simu$PE.step.AIC, simu$MSE.step.AIC, coleur[7], coleurTrans[7], point.pch[8])
+  add_point(simu$PE.step.BIC, simu$MSE.step.BIC, coleur[8], coleurTrans[8], point.pch[8])
+  add_point(simu$PE.step.HQ, simu$MSE.step.HQ, coleur[9], coleurTrans[9], point.pch[9])
+  add_point(simu$PE.LS, simu$MSE.LS, coleur[10], coleurTrans[10], point.pch[10])
+
+  # Check which lab to display in legend
+  leg_indic = rep(NA, 10)
+  leg_indic[1]  <- add_legend(median(simu$PE.scad), median(simu$MSE.scad), xlim, ylim)
+  leg_indic[2]  <- add_legend(median(simu$PE.alasso), median(simu$MSE.alasso), xlim, ylim)
+  leg_indic[3]  <- add_legend(median(simu$PE.lasso), median(simu$MSE.lasso), xlim, ylim)
+  leg_indic[4]  <- add_legend(median(simu$PE.mcp), median(simu$MSE.mcp), xlim, ylim)
+  leg_indic[5]  <- add_legend(median(simu$PE.pdc), median(simu$MSE.pdc), xlim, ylim)
+  leg_indic[6]  <- add_legend(median(simu$PE.enet), median(simu$MSE.enet), xlim, ylim)
+  leg_indic[7]  <- add_legend(median(simu$PE.step.AIC), median(simu$MSE.step.AIC), xlim, ylim)
+  leg_indic[8]  <- add_legend(median(simu$PE.step.BIC), median(simu$MSE.step.BIC), xlim, ylim)
+  leg_indic[9]  <- add_legend(median(simu$PE.step.HQ), median(simu$MSE.step.HQ), xlim, ylim)
+  leg_indic[10] <- add_legend(median(simu$PE.LS), median(simu$MSE.LS), xlim, ylim)
+
+  leg_lab = c("SCAD", "alasso", "lasso", "MCP", "PDC",
+              "enet", "AIC", "BIC", "HQ", "LS")
+  leg_pt = c(1.5, 1.5, 1.4, 1.5, 1.8, rep(1.4, 5))
+
+  if (sum(leg_indic) > 0){
+
+    if (is.null(leg_pos)){
+      leg_pos = "topleft"
+    }
+
+    legend(leg_pos, leg_lab[leg_indic],
+           pch = point.pch[leg_indic], col = coleur[leg_indic],
+           pt.cex = leg_pt[leg_indic],
+           bty = "n", cex = cex.legend)
+  }
+
+}
+
+#' @export
+plot.simulation = function(simu,
+                           main.correct = "Frequency of True Model Selection",
+                           ymax.correct = NULL,
+                           add_max = TRUE,
+                           coef.correct = 1.05,
+                           cex.correct = 1,
+                           cex.axis.correct = 1,
+                           cex.names.correct = 1,
+                           cex.selected = 1,
+                           cex.axis.selected = 1,
+                           cex.names.selected = 1,
+                           main.selected = "Average Number of Variables Selected",
+                           ymax.selected = NULL,
+                           add_min = TRUE,
+                           xlim = NULL,
+                           ylim = NULL,
+                           xlab = NULL,
+                           ylab = NULL,
+                           title = NULL,
+                           leg_pos = NULL,
+                           add_main = TRUE,
+                           add_correct = TRUE,
+                           add_selected = TRUE,
+                           cex.legend = 1.2,
+                           cex.axis = 1,
+                           cex.lab = 1,
+                           cex.main = 1){
+
+  if (add_correct || add_selected){
+    layout(matrix(c(1,1,1,1,2,3,2,3), 2, 4, byrow = FALSE))
+  }
+
+
+  if (add_main){
+    make_main_graph(simu, xlim = xlim,
+                    ylim = ylim,
+                    xlab = xlab,
+                    ylab = ylab,
+                    title = title,
+                    leg_pos = leg_pos,
+                    cex.legend = cex.legend,
+                    cex.axis = cex.axis,
+                    cex.lab = cex.lab,
+                    cex.main = cex.lab)
+  }
+
+  if (add_correct){
+    make_correct_graph(simu, main = main.correct,
+                       coef = coef.correct,
+                       add_max = add_max,
+                       cex.names = cex.names.correct,
+                       cex.axis = cex.axis.correct,
+                       cex = cex.correct)
+  }
+
+  if (add_selected){
+    make_selected_graph(simu, add_min = add_min,
+                        main = main.selected,
+                        ymax = ymax.selected,
+                        cex.names = cex.names.selected,
+                        cex.axis = cex.axis.selected,
+                        cex = cex.selected)
+  }
+
+}
+
+
+

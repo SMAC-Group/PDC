@@ -4,7 +4,7 @@
 \alias{pdc}
 \title{Model Selection based on PDC algorithm}
 \usage{
-pdc(y, X, intercept = FALSE)
+pdc(y, X, intercept = FALSE, adaptive = TRUE)
 }
 \arguments{
 \item{y}{A \code{vector} corresponding to the response vector of dimension \eqn{n}.}

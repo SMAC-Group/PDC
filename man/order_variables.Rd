@@ -4,7 +4,7 @@
 \alias{order_variables}
 \title{Compute Ordering Sequence}
 \usage{
-order_variables(y, X, intercept = FALSE)
+order_variables(y, X, intercept = FALSE, adaptive = TRUE)
 }
 \arguments{
 \item{y}{A \code{vector} corresponding to the response vector of dimension \eqn{n}.}

@@ -4,9 +4,8 @@
 \alias{run_simulation}
 \title{Generic function used to run each simulation}
 \usage{
-run_simulation(nb_simu, true_beta, n, n_star, sigma, cor_X, xlim = NULL,
-  ylim = NULL, xlab = NULL, ylab = NULL, title = NULL, cex.lab = 1.25,
-  cex.main = 1.25, cex.axis = 1.25)
+run_simulation(nb_simu, true_beta, n, n_star, sigma, cor_X, adaptive = TRUE,
+  omitted_variables = NULL, H1 = 10, H2 = 500, x_inter = NULL)
 }
 \arguments{
 \item{nb_simu}{An \code{integer} used to denote the number of Monte Carlo replications.}

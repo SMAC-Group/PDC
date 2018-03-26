@@ -1,0 +1,53 @@
+---
+title: "Simulation Study"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(pdc)
+library(simts)
+```
+
+ 
+## Simulation 1 
+
+We consider the linear model based on the vector
+
+\[
+\begin{aligned}
+  \boldsymbol{\beta}^T &= [1,
+    \underbrace{0, \ldots, 0}_\text{58} , 1], &\text{(Case 1)}\\
+  \boldsymbol{\beta}^T &= [1,
+    \underbrace{0, \ldots, 0}_\text{58} , 1, \underbrace{0, \ldots, 0}_\text{100}],  &\text{(Case 2)}
+\end{aligned}
+\]
+
+and the following
+
+- $\sigma^2 = 1$
+- The covariates are standard normal realizations with pairwise correlation given by $corr(x_j, x_k) = 0.5^{|j-k|}$
+- $n = 80$ and $n^\ast = 800$
+- $B = 500$ (Monte-Carlo replications)
+
+### Case 1: $n > p$
+
+```{r simu1_case1, fig.align='center', cache = TRUE, fig.height=5, fig.width=6}
+simu1_part1 <- run_simulation(nb_simu = 100, 
+                              true_beta = c(1, rep(0,58), 1),
+                              n = 80, n_star = 800, sigma = 1, 
+                              cor_X = 0.5,
+                              adaptive = FALSE)  
+```
+
+```{r simu1_case1_graph1, fig.align='center', fig.height=4.8, fig.width=10, dependson="simu1_case1"}
+plot(simu1_part1, xlim = c(1,1.8), ylim = c(0.1,0.6), coef.correct = 1.1)
+```
+
+```{r simu1_case1_graph2, fig.align='center', fig.height=4.8, fig.width=5, dependson="simu1_case1"}
+plot(simu1_part1, add_correct = FALSE, add_selected = FALSE)
+```
+
+```{r simu1_case1_table}
+kable(simu1_part1$summary_table) 
+```
