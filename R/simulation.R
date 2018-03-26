@@ -374,8 +374,8 @@ run_simulation <- function(nb_simu, true_beta, n, n_star, sigma, cor_X,
     fitnet0 <- glmnet(y = y_train, x = X_train, intercept = FALSE, standardize = FALSE, lambda = fitnet$lamdba)
 
     beta.lasso[i, ] <- fitnet0$beta[ ,ind]
-    PE.lasso[i]    <- (mean((X_test%*%beta.lasso[i, ] - y_test)^2))
-    MSE.lasso[i]   <- sqrt(sum((beta.lasso[i, ] - true_beta2)^2))
+    PE.lasso[i]     <- (mean((X_test%*%beta.lasso[i, ] - y_test)^2))
+    MSE.lasso[i]    <- sqrt(sum((beta.lasso[i, ] - true_beta2)^2))
 
     # Fit elastic net
     fitnet1 <- cv.glmnet(y = y_train,x = X_train, alpha = 0.25, intercept = FALSE, standardize = FALSE)
@@ -441,28 +441,28 @@ run_simulation <- function(nb_simu, true_beta, n, n_star, sigma, cor_X,
 
 
   # Output results
-  simu_out <- matrix(NA, 10, 9)
+  simu_out <- matrix(NA, 10, 10)
   dimnames(simu_out)[[1]] <- c("LS", "AIC", "BIC", "HQ",
                                   "lasso", "PDC", "enet",
                                   "alasso", "MCP", "SCAD")
   dimnames(simu_out)[[2]] <- c("Median MSEy", "SD Med MSEy",
                                   "Median MSEb", "SD Med MSEb",
                                   "correct", "included", "true+",
-                                  "false+", "# sel.")
+                                  "false+", "# sel.", "SD # sel.")
 
   if (!is.null(omitted_variables)){
     true_beta <- true_beta2
   }
-  simu_out[1, ]  <- fill_result_matrix(PE.LS, MSE.LS, beta.LS, true_beta, omitted_variables)
-  simu_out[2, ]  <- fill_result_matrix(PE.step.AIC, MSE.step.AIC, beta.step.AIC, true_beta, omitted_variables)
-  simu_out[3, ]  <- fill_result_matrix(PE.step.BIC, MSE.step.BIC, beta.step.BIC, true_beta, omitted_variables)
-  simu_out[4, ]  <- fill_result_matrix(PE.step.HQ, MSE.step.HQ, beta.step.HQ, true_beta, omitted_variables)
-  simu_out[5, ]  <- fill_result_matrix(PE.lasso, MSE.lasso, beta.lasso, true_beta, omitted_variables)
-  simu_out[6, ]  <- fill_result_matrix(PE.pdc, MSE.pdc, beta.pdc, true_beta, omitted_variables)
-  simu_out[7, ]  <- fill_result_matrix(PE.enet, MSE.enet, beta.enet, true_beta, omitted_variables)
-  simu_out[8, ]  <- fill_result_matrix(PE.alasso, MSE.alasso, beta.alasso, true_beta, omitted_variables)
-  simu_out[9, ]  <- fill_result_matrix(PE.mcp, MSE.mcp, beta.mcp, true_beta, omitted_variables)
-  simu_out[10, ] <- fill_result_matrix(PE.scad, MSE.scad, beta.scad, true_beta, omitted_variables)
+  simu_out[1, ]  <- fill_result_matrix(PE.LS, MSE.LS, beta.LS, true_beta)
+  simu_out[2, ]  <- fill_result_matrix(PE.step.AIC, MSE.step.AIC, beta.step.AIC, true_beta)
+  simu_out[3, ]  <- fill_result_matrix(PE.step.BIC, MSE.step.BIC, beta.step.BIC, true_beta)
+  simu_out[4, ]  <- fill_result_matrix(PE.step.HQ, MSE.step.HQ, beta.step.HQ, true_beta)
+  simu_out[5, ]  <- fill_result_matrix(PE.lasso, MSE.lasso, beta.lasso, true_beta)
+  simu_out[6, ]  <- fill_result_matrix(PE.pdc, MSE.pdc, beta.pdc, true_beta)
+  simu_out[7, ]  <- fill_result_matrix(PE.enet, MSE.enet, beta.enet, true_beta)
+  simu_out[8, ]  <- fill_result_matrix(PE.alasso, MSE.alasso, beta.alasso, true_beta)
+  simu_out[9, ]  <- fill_result_matrix(PE.mcp, MSE.mcp, beta.mcp, true_beta)
+  simu_out[10, ] <- fill_result_matrix(PE.scad, MSE.scad, beta.scad, true_beta)
 
   # Make graph
   coleur = ggplot_like_colors(10)
@@ -479,12 +479,16 @@ run_simulation <- function(nb_simu, true_beta, n, n_star, sigma, cor_X,
   }
 
   if (is.null(ylim)){
-    ylim <- range(c(median(MSE.scad^2), median(MSE.pdc^2),
-                   median(MSE.lasso^2), median(MSE.enet^2),
-                   median(MSE.alasso^2), median(MSE.mcp^2),
-                   median(MSE.step.AIC^2),
-                   median(MSE.step.BIC^2), median(MSE.step.HQ^2),
-                   median(MSE.LS^2)))
+    ylim <- range(c(mean(apply(beta.LS, 1, nb_selected)),
+                    mean(apply(beta.lasso, 1, nb_selected)),
+                    mean(apply(beta.enet, 1, nb_selected)),
+                    mean(apply(beta.alasso, 1, nb_selected)),
+                    mean(apply(beta.mcp, 1, nb_selected)),
+                    mean(apply(beta.scad, 1, nb_selected)),
+                    mean(apply(beta.pdc, 1, nb_selected)),
+                    mean(apply(beta.step.AIC, 1, nb_selected)),
+                    mean(apply(beta.step.BIC, 1, nb_selected)),
+                    mean(apply(beta.step.HQ, 1, nb_selected))))
   }
 
   if (is.null(xlab)){ xlab = "Med(PE)" }
@@ -512,46 +516,48 @@ run_simulation <- function(nb_simu, true_beta, n, n_star, sigma, cor_X,
   #grid()
 
   # Add points
-  add_point(PE.scad, MSE.scad, coleur[1], coleurTrans[1], point.pch[1])
-  add_point(PE.alasso, MSE.alasso, coleur[2], coleurTrans[2], point.pch[2])
-  add_point(PE.lasso, MSE.lasso, coleur[3], coleurTrans[3], point.pch[3])
-  add_point(PE.mcp, MSE.mcp, coleur[4], coleurTrans[4], point.pch[4])
-  add_point(PE.pdc, MSE.pdc, coleur[5], coleurTrans[5], point.pch[5])
-  add_point(PE.enet, MSE.enet, coleur[6], coleurTrans[1], point.pch[6])
-  add_point(PE.step.AIC, MSE.step.AIC, coleur[7], coleurTrans[7], point.pch[8])
-  add_point(PE.step.BIC, MSE.step.BIC, coleur[8], coleurTrans[8], point.pch[8])
-  add_point(PE.step.HQ, MSE.step.HQ, coleur[9], coleurTrans[9], point.pch[9])
-  add_point(PE.LS, MSE.LS, coleur[10], coleurTrans[10], point.pch[10])
+  add_point(PE.scad, beta.scad, coleur[1], coleurTrans[1], point.pch[1])
+  add_point(PE.alasso, beta.alasso, coleur[2], coleurTrans[2], point.pch[2])
+  add_point(PE.lasso, beta.lasso, coleur[3], coleurTrans[3], point.pch[3])
+  add_point(PE.mcp, beta.mcp, coleur[4], coleurTrans[4], point.pch[4])
+  add_point(PE.pdc, beta.pdc, coleur[5], coleurTrans[5], point.pch[5])
+  add_point(PE.enet, beta.enet, coleur[6], coleurTrans[6], point.pch[6])
+  add_point(PE.step.AIC, beta.step.AIC, coleur[7], coleurTrans[7], point.pch[8])
+  add_point(PE.step.BIC, beta.step.BIC, coleur[8], coleurTrans[8], point.pch[8])
+  add_point(PE.step.HQ, beta.step.HQ, coleur[9], coleurTrans[9], point.pch[9])
+  add_point(PE.LS, beta.LS, coleur[10], coleurTrans[10], point.pch[10])
 
   # Check which lab to display in legend
   leg_indic = rep(NA, 10)
-  leg_indic[1]  <- add_legend(median(PE.scad), median(MSE.scad^2), xlim, ylim)
-  leg_indic[2]  <- add_legend(median(PE.alasso), median(MSE.alasso^2), xlim, ylim)
-  leg_indic[3]  <- add_legend(median(PE.lasso), median(MSE.lasso^2), xlim, ylim)
-  leg_indic[4]  <- add_legend(median(PE.mcp), median(MSE.mcp^2), xlim, ylim)
-  leg_indic[5]  <- add_legend(median(PE.pdc), median(MSE.pdc^2), xlim, ylim)
-  leg_indic[6]  <- add_legend(median(PE.enet), median(MSE.enet^2), xlim, ylim)
-  leg_indic[7]  <- add_legend(median(PE.step.AIC), median(MSE.step.AIC^2), xlim, ylim)
-  leg_indic[8]  <- add_legend(median(PE.step.BIC), median(MSE.step.BIC^2), xlim, ylim)
-  leg_indic[9]  <- add_legend(median(PE.step.HQ), median(MSE.step.HQ^2), xlim, ylim)
-  leg_indic[10] <- add_legend(median(PE.LS), median(MSE.LS^2), xlim, ylim)
+  leg_indic[1]  <- add_legend(median(PE.scad), mean(apply(beta.scad, 1, nb_selected)), xlim, ylim)
+  leg_indic[2]  <- add_legend(median(PE.alasso), mean(apply(beta.alasso, 1, nb_selected)), xlim, ylim)
+  leg_indic[3]  <- add_legend(median(PE.lasso), mean(apply(beta.lasso, 1, nb_selected)), xlim, ylim)
+  leg_indic[4]  <- add_legend(median(PE.mcp), mean(apply(beta.mcp, 1, nb_selected)), xlim, ylim)
+  leg_indic[5]  <- add_legend(median(PE.pdc), mean(apply(beta.pdc, 1, nb_selected)), xlim, ylim)
+  leg_indic[6]  <- add_legend(median(PE.enet), mean(apply(beta.enet, 1, nb_selected)), xlim, ylim)
+  leg_indic[7]  <- add_legend(median(PE.step.AIC), mean(apply(beta.step.AIC, 1, nb_selected)), xlim, ylim)
+  leg_indic[8]  <- add_legend(median(PE.step.BIC), mean(apply(beta.step.BIC, 1, nb_selected)), xlim, ylim)
+  leg_indic[9]  <- add_legend(median(PE.step.HQ), mean(apply(beta.step.HQ, 1, nb_selected)), xlim, ylim)
+  leg_indic[10] <- add_legend(median(PE.LS), mean(beta.LS), xlim, ylim)
 
   leg_lab = c("SCAD", "alasso", "lasso", "MCP", "PDC",
               "enet", "AIC", "BIC", "HQ", "LS")
   leg_pt = c(1.5, 1.5, 1.4, 1.5, 1.8, rep(1.4, 5))
-  legend("topleft", leg_lab[leg_indic],
-         pch = point.pch[leg_indic], col = coleur[leg_indic],
-         pt.cex = leg_pt[leg_indic],
-         bty = "n", cex = 1.2)
+  if (sum(leg_indic) > 0){
+    legend("topleft", leg_lab[leg_indic],
+           pch = point.pch[leg_indic], col = coleur[leg_indic],
+           pt.cex = leg_pt[leg_indic],
+           bty = "n", cex = 1.2)
+  }
 
   # Output
   simu_out
 }
 
 #' @export
-add_point <- function(PE, MSE, couleur, couleur_trans, point_pch){
-  point.meth <- c(median(PE),median(MSE^2))
-  mat.meth <- as.matrix(cbind(PE, MSE^2))
+add_point <- function(PE, beta, couleur, couleur_trans, point_pch){
+  point.meth <- c(median(PE), mean(apply(beta, 1, nb_selected)))
+  mat.meth <- as.matrix(cbind(PE, apply(beta, 1, nb_selected)))
   cov.meth <- boot.conf.region(mat.meth, B = 1000)
   el.meth <- ellipse(cov.meth, centre = point.meth)
   points(point.meth[1],point.meth[2], pch = point_pch,
@@ -561,23 +567,18 @@ add_point <- function(PE, MSE, couleur, couleur_trans, point_pch){
 }
 
 #' @export
-fill_result_matrix <- function(PE.meth, MSE.meth, beta.meth, true_beta, omit){
-  output <- rep(0, 9)
+fill_result_matrix <- function(PE.meth, MSE.meth, beta.meth, true_beta){
+  output <- rep(NA, 10)
   output[1] <- median(PE.meth)
   output[2] <- boot.med(PE.meth)
   output[3] <- median(MSE.meth^2)
   output[4] <- boot.med(MSE.meth^2)
-  if (is.null(omit)){
-    output[5] <- 100*mean(apply(beta.meth, 1, is_correct, beta = true_beta))
-  }
-
-  if (is.null(omit)){
-    output[6] <- 100*mean(apply(beta.meth, 1, is_included, beta = true_beta))
-  }
-
+  output[5] <- 100*mean(apply(beta.meth, 1, is_correct, beta = true_beta))
+  output[6] <- 100*mean(apply(beta.meth, 1, is_included, beta = true_beta))
   output[7] <- mean(apply(beta.meth, 1, nb_signif, beta = true_beta))
   output[8] <- mean(apply(beta.meth, 1, nb_false_pos, beta = true_beta))
   output[9] <- mean(apply(beta.meth, 1, nb_selected))
+  output[10] <- boot.mean(apply(beta.meth, 1, nb_selected))
   output
 }
 
@@ -587,7 +588,8 @@ boot.conf.region = function(X, B = 500){
   n = dim(X)[1]
   for (i in 1:B){
     X.star = X[sample(1:n, n, replace = TRUE),]
-    res[i,] = apply(X.star,2,median)
+    res[i,1] = median(X.star[,1])
+    res[i,2] = mean(X.star[,2])
   }
   cov(res)
 }
@@ -595,4 +597,14 @@ boot.conf.region = function(X, B = 500){
 #' @export
 add_legend = function(x, y, xlim, ylim){
   (x > xlim[1] & x < xlim[2]) & (y > ylim[1] & y < ylim[2])
+}
+
+boot.mean <- function(x, B = 500){
+  med = rep(NA,B)
+  n = length(x)
+  for (i in 1:B){
+    med[i] = mean(x[sample(1:n, n, replace = TRUE)])
+  }
+  mean.med = mean(med)
+  return(sqrt(sum((med - mean.med)^2)/(B-1)))
 }

@@ -1,0 +1,185 @@
+---
+title: "Simulation Study"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(pdc)
+library(simts)
+```
+
+ 
+## Simulation 1 
+
+We consider the linear model based on the vector
+
+\[
+\begin{aligned}
+  \boldsymbol{\beta}^T &= [1,
+    \underbrace{0, \ldots, 0}_\text{58} , 1], &\text{(Case 1)}\\
+  \boldsymbol{\beta}^T &= [1,
+    \underbrace{0, \ldots, 0}_\text{58} , 1, \underbrace{0, \ldots, 0}_\text{100}],  &\text{(Case 2)}
+\end{aligned}
+\]
+
+and the following
+
+- $\sigma^2 = 1$
+- The covariates are standard normal realizations with pairwise correlation given by $corr(x_j, x_k) = 0.5^{|j-k|}$
+- $n = 80$ and $n^\ast = 800$
+- $B = 500$ (Monte-Carlo replications)
+
+### Case 1: $n > p$
+
+```{r simu1_case1, fig.align='center', cache = TRUE, fig.height=5, fig.width=6}
+simu1_part1 <- run_simulation(nb_simu = 500, true_beta = c(1, rep(0,58), 1),
+                              n = 80, n_star = 800, sigma = 1, cor_X = 0.5,
+                              xlim = c(1.035, 1.09), ylim = c(2.35, 5.2),
+                              xlab = expression(PE[y]), 
+                              ylab = "Mean(#sel.)",
+                              title = "Simulation 1: n > p",
+                              adaptive = FALSE)  
+kable(simu1_part1)  
+```
+
+### Case 2: $n < p$ 
+
+```{r simu1_case2, fig.align='center', cache = TRUE, fig.height=5, fig.width=6}
+simu1_part2 <- run_simulation(nb_simu = 500, true_beta = c(1, rep(0,58), 1, rep(0, 100)),
+                              n = 80, n_star = 800, sigma = 1, cor_X = 0.5,
+                              xlim = c(1.035, 1.225), ylim = c(2.5, 8.5),
+                              xlab = expression(PE[y]), 
+                              ylab = "Mean(#sel.)",
+                              title = "Simulation 1: n < p",
+                              adaptive = FALSE)  
+kable(simu1_part2)  
+```
+
+## Simulation 2
+
+We consider the linear model based on the vector
+
+\[
+\begin{aligned}
+  \boldsymbol{\beta}^T &= [2, 0, 1, 2, 0, 1, \underbrace{0, \ldots, 0}_\text{16}, \underbrace{0.1, \ldots, 0.1}_\text{6}, \underbrace{0, \ldots, 0}_\text{16}, 2, 0, 1, 2, 0, 1], &\text{(Case 1)}\\
+  \boldsymbol{\beta}^T &= [2, 0, 1, 2, 0, 1, \underbrace{0, \ldots, 0}_\text{16}, \underbrace{0.1, \ldots, 0.1}_\text{6}, \underbrace{0, \ldots, 0}_\text{16}, 2, 0, 1, 2, 0, 1, \underbrace{0, \ldots, 0}_\text{100}],  &\text{(Case 2)}
+\end{aligned}
+\]
+
+and the following
+
+- $\sigma^2 = 2$
+- The covariates are standard normal realizations with pairwise correlation given by $corr(x_j, x_k) = 0.5^{|j-k|}$
+- $n = 100$ and $n^\ast = 1000$
+- $B = 500$ (Monte-Carlo replications)
+
+### Case 1: $n > p$
+
+```{r simu2_case1, fig.align='center', cache = TRUE, fig.height=5, fig.width=6}
+beta <- c(rep(c(2, 0, 1), 2),rep(0, 16),rep(0.1, 6),rep(0, 16),rep(c(2, 0, 1), 2))
+simu2_part1 <- run_simulation(nb_simu = 500, true_beta = beta,
+                              n = 100, n_star = 1000, sigma = 2, cor_X = 0.5,
+                              xlim = c(4.73, 5.4), ylim = c(7.5, 16),
+                              xlab = expression(PE[y]),
+                              ylab = "Mean(#sel.)", 
+                              title = "Simulation 2: n > p",
+                              adaptive = FALSE)  
+kable(simu2_part1)  
+```
+
+### Case 2: $n < p$ 
+
+```{r simu2_case2, fig.align='center', cache = TRUE, fig.height=5, fig.width=6}
+beta <- c(rep(c(2, 0, 1), 2), rep(0, 16), rep(0.1, 6), rep(0, 16), rep(c(2, 0, 1), 2), rep(0, 100))
+simu2_part2 <- run_simulation(nb_simu = 500, true_beta = beta,
+                              n = 100, n_star = 1000, sigma = 2, cor_X = 0.5,
+                              xlim = c(4.9, 5.8), ylim = c(7.5, 21),
+                              xlab = expression(PE[y]),
+                              ylab = "Mean(#sel.)", 
+                              title = "Simulation 2: n < p",
+                              adaptive = FALSE)  
+kable(simu2_part2)  
+```
+
+
+## Simulation 3
+
+We consider the linear model based on the vector
+
+\[
+\begin{aligned}
+  \boldsymbol{\beta}^T &= [3, \underbrace{0, \ldots, 0}_\text{5}, 1, \underbrace{0, \ldots, 0}_\text{10}, 0.05, 0.05, 0.05, \underbrace{0, \ldots, 0}_\text{10}, 2, \underbrace{0, \ldots, 0}_\text{20}], &\text{(Case 1)}\\
+  \boldsymbol{\beta}^T &= [3, \underbrace{0, \ldots, 0}_\text{5}, 1, \underbrace{0, \ldots, 0}_\text{10}, 0.05, 0.05, 0.05, \underbrace{0, \ldots, 0}_\text{10}, 2, \underbrace{0, \ldots, 0}_\text{120}],  &\text{(Case 2)}
+\end{aligned}
+\]
+
+and the following
+
+- $\sigma^2 = 3$
+- The covariates are standard normal realizations with pairwise correlation given by $corr(x_j, x_k) = 0.25^{|j-k|}$
+- $n = 100$ and $n^\ast = 1000$
+- $B = 500$ (Monte-Carlo replications)
+   
+### Case 1: $n > p$ 
+ 
+```{r simu3_case1, fig.align='center', cache = TRUE, fig.height=5, fig.width=6}
+beta <- c(3,rep(0,5),1,rep(0,10),rep(0.05,3),rep(0,10),2,rep(0,20))
+simu3_part1 <- run_simulation(nb_simu = 500, true_beta = beta,
+                              n = 100, n_star = 1000, sigma = 3, cor_X = 0.25,
+                              xlim = c(9.65, 10.5), ylim = c(3, 11.5),
+                              xlab = expression(PE[y]), 
+                              ylab = "Mean(#sel.)", 
+                              title = "Simulation 3: n > p",
+                              adaptive = FALSE)
+kable(simu3_part1)  
+```
+
+
+### Case 2: $n < p$ 
+ 
+```{r simu3_case2, fig.align='center', cache = TRUE, fig.height=5, fig.width=6}
+beta <- c(3,rep(0,5),1,rep(0,10),rep(0.05,3),rep(0,10),2,rep(0,20))
+simu3_part2 <- run_simulation(nb_simu = 500, true_beta = beta,
+                              n = 100, n_star = 1000, sigma = 3, cor_X = 0.25,
+                              xlim = c(9.65, 10.5), ylim = c(3, 12),
+                              xlab = expression(PE[y]), 
+                              ylab = "Mean(#sel.)", 
+                              title = "Simulation 3: n < p",
+                              adaptive = FALSE)
+kable(simu3_part2)  
+```
+
+
+## Simulation 4
+   
+Same setting as Simulation 3 but the first column of $\mathbf{X}$ is unobserved.
+
+### Case 1: $n > p$ 
+
+```{r simu4_case1, fig.align='center', cache = TRUE, fig.height=5, fig.width=6}
+beta <- c(3,rep(0,5),1,rep(0,10),rep(0.05,3),rep(0,10),2,rep(0,20))
+simu4_part1 <- run_simulation(nb_simu = 500, true_beta = beta,
+                              n = 100, n_star = 1000, sigma = 3, cor_X = 0.25,
+                              xlim = c(19.3,20.2), ylim = c(1.5, 14),
+                              xlab = expression(PE[y]), 
+                              ylab = "Mean(#sel.)", 
+                              title = "Simulation 4: n > p",
+                              adaptive = FALSE, omitted_variables = 1)
+kable(simu4_part1)  
+```
+ 
+### Case 2: $n < p$ 
+
+```{r simu4_case2, fig.align='center', cache = TRUE, fig.height=5, fig.width=6}
+beta <- c(3,rep(0,5),1,rep(0,10),rep(0.05,3),rep(0,10),2,rep(0,120))
+simu4_part2 <- run_simulation(nb_simu = 500, true_beta = beta, 
+                              n = 100, n_star = 1000, sigma = 3, cor_X = 0.25,
+                              xlim = c(19.5,20.7), ylim = c(1.5, 20),
+                              xlab = expression(PE[y]), 
+                              ylab = "Mean(#sel.)", 
+                              title = "Simulation 4: n < p",
+                              adaptive = FALSE, omitted_variables = 1)
+kable(simu4_part2)  
+```
+
